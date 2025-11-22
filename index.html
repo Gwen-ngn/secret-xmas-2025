@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Mission Secrète - Accès Restreint</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            color: #e8f4f8;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Effet neige */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            z-index: 1;
+            color: #fff;
+            font-size: 1em;
+            opacity: 0.8;
+            animation: fall linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+
+        /* Écran de connexion */
+        #login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        }
+
+        .login-container {
+            max-width: 500px;
+            background: rgba(15, 32, 39, 0.95);
+            border: 3px solid #c41e3a;
+            border-radius: 15px;
+            padding: 50px 40px;
+            box-shadow: 0 0 50px rgba(196, 30, 58, 0.7);
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .lock-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .login-title {
+            color: #ff6b6b;
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .login-subtitle {
+            color: #4ecdc4;
+            font-size: 1em;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .login-instruction {
+            color: #e8f4f8;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .password-input-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #password-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #4ecdc4;
+            border-radius: 8px;
+            color: #4ecdc4;
+            text-align: center;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        #password-input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+
+        #password-input::placeholder {
+            color: rgba(78, 205, 196, 0.5);
+            letter-spacing: normal;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #c41e3a 0%, #ff6b6b 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #ff6b6b 0%, #c41e3a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(196, 30, 58, 0.5);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            margin-top: 15px;
+            font-weight: bold;
+            display: none;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .hint {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed #4ecdc4;
+            color: #4ecdc4;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+        /* Contenu principal (caché par défaut) */
+        #main-content {
+            display: none;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(15, 32, 39, 0.9);
+            border: 2px solid #c41e3a;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(196, 30, 58, 0.5);
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #c41e3a;
+            padding-bottom: 30px;
+            margin-bottom: 30px;
+        }
+
+        .classified-stamp {
+            display: inline-block;
+            border: 3px solid #c41e3a;
+            color: #c41e3a;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 24px;
+            transform: rotate(-5deg);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #ff6b6b;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            color: #4ecdc4;
+            font-size: 1.2em;
+            font-style: italic;
+        }
+
+        .mission-brief {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #4ecdc4;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 5px;
+        }
+
+        .mission-brief h2 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .mission-brief p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .instructions {
+            margin: 30px 0;
+        }
+
+        .step {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #4ecdc4;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ff6b6b;
+            transform: translateX(5px);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: #c41e3a;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .step h3 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            margin-top: 10px;
+            font-size: 1.3em;
+        }
+
+        .step p {
+            color: #e8f4f8;
+            line-height: 1.6;
+            font-size: 1em;
+        }
+
+        .important-note {
+            background: rgba(196, 30, 58, 0.2);
+            border: 2px dashed #c41e3a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .important-note p {
+            color: #ff6b6b;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #4ecdc4;
+            color: #4ecdc4;
+            font-style: italic;
+        }
+
+        .emoji {
+            font-style: normal;
+            font-size: 1.2em;
+        }
+
+        .code-block {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #4ecdc4;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            color: #4ecdc4;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .classified-stamp {
+                font-size: 18px;
+                padding: 8px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Effet neige -->
+    <div class="snowflakes" aria-hidden="true"></div>
+
+    <!-- Écran de connexion -->
+    <div id="login-screen">
+        <div class="login-container">
+            <div class="lock-icon">🔐</div>
+            <h2 class="login-title">ACCÈS SÉCURISÉ</h2>
+            <p class="login-subtitle">Zone de sécurité maximale</p>
+            <p class="login-instruction">
+                Cette mission est classifiée.<br>
+                Entre le <strong style="color: #ff6b6b;">code d'accès</strong> fourni dans ta lettre.
+            </p>
+            <form id="login-form" onsubmit="return false;">
+                <div class="password-input-wrapper">
+                    <input 
+                        type="text" 
+                        id="password-input" 
+                        placeholder="CODE D'ACCÈS"
+                        autocomplete="off"
+                        maxlength="20"
+                    >
+                </div>
+                <button type="submit" class="submit-btn" onclick="checkPassword()">
+                    🚀 Accéder à la mission
+                </button>
+                <div id="error-message" class="error-message">
+                    ❌ Code incorrect. Vérifie ta lettre !
+                </div>
+                <p class="hint">
+                    💡 Indice : Le code contient "XMAS" et un nombre de bits...
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contenu principal (caché jusqu'à connexion) -->
+    <div id="main-content">
+        <div class="container">
+            <div class="header">
+                <div class="classified-stamp"> CONFIDENTIEL </div>
+                <h1>MISSION SECRÈTE</h1>
+                <p class="subtitle">Opération Noël 2025 - Code : XMAS-8BIT</p>
+            </div>
+
+            <div class="mission-brief">
+                <h2><span class="emoji">📋</span> Briefing de Mission</h2>
+                <p>
+                    Bonjour Agent <span class="highlight">Nicoas</span>,
+                </p>
+                <p>
+                    Le Quartier Général du Père Noël a intercepté une <strong>console mystérieuse</strong> 
+                    lors d'une opération clandestine en territoire rétro-gaming.
+                </p>
+                <p>
+                    Après analyse, nos experts ont confirmé qu'il s'agit d'une <span class="highlight">Miyoo Mini Plus</span> 
+                    - un appareil capable de faire revivre l'âge d'or du gaming 8-bit et 16-bit.
+                </p>
+                <p>
+                    Cette console est maintenant <strong>entre tes mains</strong>. Mais ce n'est pas tout...
+                </p>
+            </div>
+
+            <div class="important-note">
+                <p> UN JEU SECRET T'ATTEND QUELQUE PART DANS LA CONSOLE <span class="emoji">🎮</span></p>
+            </div>
+
+            <div class="instructions">
+                <h2 style="color: #4ecdc4; margin-bottom: 20px; font-size: 1.8em;">
+                    <span class="emoji">🎯</span> Objectifs de la Mission
+                </h2>
+
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Découvre ta console</h3>
+                    <p>
+                        La <strong>Miyoo Mini Plus</strong> est déjà configurée et prête à l'emploi.
+                        Allume-la et explore le menu principal. Tu y trouveras des centaines de jeux rétro 
+                        pour revivre la magie des années 80-90.
+                    </p>
+                    <p style="margin-top: 10px; color: #4ecdc4; font-style: italic;">
+                        💡 Astuce : Les commandes sont intuitives - comme sur une Game Boy !
+                    </p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Trouve le dossier secret</h3>
+                    <p>
+                        Quelque part dans les méandres de la console se cache un <span class="highlight">dossier spécial</span>.
+                        Il pourrait s'appeler <code class="code-block" style="display: inline; padding: 2px 8px;">Noël2025</code> 
+                        ou quelque chose du genre...
+                    </p>
+                    <p style="margin-top: 10px;">
+                        <strong>Indice :</strong> Explore les catégories de jeux. L'un des dossiers n'est pas comme les autres...
+                    </p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Lance le jeu "Mission Secret Santa"</h3>
+                    <p>
+                        Une fois le dossier trouvé, tu découvriras un <span class="highlight">jeu Game Boy personnalisé</span> 
+                        créé spécialement pour toi.
+                    </p>
+                    <p style="margin-top: 10px;">
+                        Ce mini-jeu rétro contient une enquête de Noël où tu devras découvrir...
+                        <strong>qui est ton Secret Santa !</strong> <span class="emoji">🎅</span>
+                    </p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Résous l'énigme finale</h3>
+                    <p>
+                        Parle aux personnages, ramasse des indices, résous les énigmes...
+                        et découvre enfin l'identité de celui ou celle qui t'a offert ce cadeau !
+                    </p>
+                    <p style="margin-top: 10px; color: #ff6b6b; font-weight: bold;">
+                        ⚠️ Attention : Certaines réponses pourraient te surprendre...
+                    </p>
+                </div>
+            </div>
+
+            <div class="mission-brief" style="border-color: #ff6b6b;">
+                <h2 style="color: #ff6b6b;"><span class="emoji">🎮</span> Équipement fourni</h2>
+                <p><strong>Console :</strong> Miyoo Mini Plus (avec OnionOS)</p>
+                <p><strong>Jeux préinstallés :</strong> Centaines de classiques rétro</p>
+                <p><strong>Jeu exclusif :</strong> Mission Secret Santa (Game Boy custom)</p>
+                <p><strong>Carte SD :</strong> Déjà configurée et prête</p>
+                <p><strong>Batterie :</strong> ~4h d'autonomie</p>
+            </div>
+
+            <div class="important-note" style="background: rgba(78, 205, 196, 0.2); border-color: #4ecdc4;">
+                <p style="color: #4ecdc4;">
+                    <span class="emoji">💡</span> 
+                    CONSEIL DE PRO : Si tu veux recommencer le jeu Secret Santa, 
+                    appuie sur <span class="highlight" style="color: #ff6b6b;">Select + Menu </span> pendant le jeu pour ouvrir le menu !
+                </p>
+            </div>
+
+            <div class="footer">
+                <p><span class="emoji">🎄</span> Joyeux Noël 2025 <span class="emoji">🎄</span></p>
+                <p style="margin-top: 10px;">Cette mission ne s'auto-détruira... jamais. Profite-en bien !</p>
+                <p style="margin-top: 20px; font-size: 0.9em; color: #666;">
+                    — Le Quartier Général du Père Noël
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animation des flocons de neige
+        function createSnowflakes() {
+            const container = document.querySelector('.snowflakes');
+            const snowflakeCount = 50;
+            
+            for (let i = 0; i < snowflakeCount; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.classList.add('snowflake');
+                snowflake.textContent = Math.random() > 0.5 ? '❅' : '❆';
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = Math.random() * 3 + 7 + 's';
+                snowflake.style.animationDelay = Math.random() * 5 + 's';
+                snowflake.style.fontSize = Math.random() * 10 + 10 + 'px';
+                snowflake.style.opacity = Math.random() * 0.6 + 0.3;
+                container.appendChild(snowflake);
+            }
+        }
+        
+        createSnowflakes();
+
+        // Gestion de la connexion
+        const correctPassword = "XMAS8BIT";
+        
+        function checkPassword() {
+            const input = document.getElementById('password-input');
+            const errorMsg = document.getElementById('error-message');
+            const loginScreen = document.getElementById('login-screen');
+            const mainContent = document.getElementById('main-content');
+            
+            const enteredPassword = input.value.trim().toUpperCase();
+            
+            if (enteredPassword === correctPassword) {
+                // Mot de passe correct - afficher le contenu
+                loginScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                // Scroll en haut
+                window.scrollTo(0, 0);
+            } else {
+                // Mot de passe incorrect
+                errorMsg.style.display = 'block';
+                input.value = '';
+                input.focus();
+                
+                // Animation shake sur l'input
+                input.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    input.style.animation = '';
+                }, 500);
+                
+                // Cacher le message d'erreur après 3 secondes
+                setTimeout(() => {
+                    errorMsg.style.display = 'none';
+                }, 3000);
+            }
+            
+            return false;
+        }
+        
+        // Permettre la validation avec la touche Entrée
+        document.getElementById('password-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                checkPassword();
+            }
+        });
+        
+        // Focus automatique sur l'input au chargement
+        window.addEventListener('load', function() {
+            document.getElementById('password-input').focus();
+        });
+    </script>
+</body>
+</html>
